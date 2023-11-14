@@ -9,7 +9,6 @@ sst = [
 
 print(sst)
 
-
 # A váriavel chMSL também recebe uma lista(array) com os dados da tabela Chmsl
 chmsl = [
     [1995.022,	-20.72], [1995.049,	-23.09], [1995.076,	-17.52], [1995.104,	-20.82], [1995.131,	-24.73], [1995.158,	-21.21], [1995.212,	-17.11], [1995.239,	-23.32], [1995.267,	-21.23],
@@ -138,4 +137,4 @@ chmsl = [
 ]
 
 
-# print(chmsl)
+print(chmsl)
