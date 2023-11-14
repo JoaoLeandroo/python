@@ -928,10 +928,8 @@ chmsl = [
 ]
 
 # Criei duas variaveis para verificar os intervalos desejados de acordo com o ano inserido
-ano_inicial = 1996
-ano_final = 1996
-
-
+ano_inicial = 1995
+ano_final = 1995
 
 # Array criado para receber os dados do ano escolhido
 dados_periodo = []
@@ -955,6 +953,5 @@ for entrada in dados_periodo:
     somadorTotal += entrada[1]
     media = somadorTotal / quantidade_elementos
 
-
-# Metodo round arredonda a media, mostrando apenas 3 número após o .
+# Metodo round arredonda a media, mostrando apenas 3 números após o .
 print(f'Verificando de {ano_inicial} ate {ano_final} a media foi {round(media, 3)}')
