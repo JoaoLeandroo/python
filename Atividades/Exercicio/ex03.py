@@ -1,9 +1,6 @@
-import statsmodels.api as sm
 import matplotlib.pyplot as plt
-import pandas as pd
 
-# Dados para serem utilizados no dataframe
-lista_krtv = [
+krtv_int =  [
     0.159996,
     0.14889672770282075,
     0.16102356635666792,
@@ -80,7 +77,7 @@ lista_krtv = [
     0.16916297782357953,    
 ]
 
-lista_naus = [
+naus_int = [
     0.905814,
     0.9019563868002788,
     0.8735621326017012,
@@ -157,23 +154,62 @@ lista_naus = [
     0.9375404289465396,
 ]
 
-# Foi criado um DataFrame com as duas séries temporais
-serie_final_defasagem = pd.DataFrame({'NAUS': lista_krtv, 'KRTV': lista_naus})
-# Calcular a correlação com as defasagens
-defasagem_dados = range(-36, 36)
-correlacao_dados_final = [serie_final_defasagem['NAUS'].corr(serie_final_defasagem['KRTV'].shift(i)) for i in defasagem_dados]
+# Defasagem (variação temporal entre as séries)
+defasagem = [
+    -36, -35, -34, -33, -32, -31, -30, -29, -28, -27, -26, -25, -24, 
+    -23, -22, -21, -20, -19, -18, -17, -16, -15, -14, -13, -12, -11, 
+    -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 
+    10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36 
+]
 
-# Calcula o correlograma
-fig, x = plt.subplots(figsize=(10, 6))
-sm.graphics.tsa.plot_acf(correlacao_dados_final, lags = defasagem_dados, ax=x)
 
-# Adiciona a cor desejada ao grafico
-sm.graphics.tsa.plot_acf(correlacao_dados_final, lags = defasagem_dados, ax=x, color='red')
+# Cálculo da média das estações (média dos valores interpolados)
+naus_media = sum(naus_int) / len(naus_int)
+krtv_media = sum(krtv_int) / len(krtv_int)
 
-# Configurações adicionais do gráfico
-x.set_title('Dados de defasagem entre as Séries NAUS e KRTV')
-x.set_xlabel('Defasagem ∆t')
-x.set_ylabel('Correlação')
+# Cálculo do desvio padrão das estações (dp dos valores interpolados)
+naus_dp = (sum((x - naus_media) ** 2 for x in naus_int) / (len(naus_int) - 1)) ** 0.5
+krtv_dp = (sum((x - krtv_media) ** 2 for x in krtv_int) / (len(krtv_int) - 1)) ** 0.5
 
-# Imprimi o grafico na tela
-plt.show()
+# Lista para armazenar as correlações calculadas para cada defasagem
+correlacoes = []
+
+# Loop sobre cada defasagem
+for defa in defasagem:
+    if defa >= 0:
+        # Calcula a correlação para defasagem positiva
+        correlacao = sum(((x - naus_media) * (y - krtv_media)) for x, y in zip(naus_int[:len(naus_int)-defa], krtv_int[defa:]))
+    elif defa == 0:
+        # Calcula a correlação para defasagem zero
+        correlacao = sum((x * y) for x, y in zip(naus_int, krtv_int)) / (len(naus_int))
+    else:
+        # Calcula a correlação para defasagem negativa
+        correlacao = sum(((x - krtv_media) * (y - naus_media)) for x, y in zip(krtv_int[:len(krtv_int)+defa], naus_int[-defa:]))
+    
+    # Normaliza a correlação pelos desvios padrão
+    correlacoes.append({'Defasagem': defa, 'Correlacao': correlacao / (len(naus_int) * naus_dp * krtv_dp)})
+
+# Imprime as correlações calculadas
+for i in correlacoes:
+    print(i)
+
+# Função para plotar o gráfico de barras com as correlações
+def plot_correlacoes(correlacoes):
+    defasagens = [item['Defasagem'] for item in correlacoes]
+    correlacoes_vals = [item['Correlacao'] for item in correlacoes]
+
+    # Gera o gráfico de barras
+    plt.bar(defasagens, correlacoes_vals, width=0.5, color='steelblue')
+    
+    # Adiciona títulos e rótulos aos eixos
+    plt.title('Correlograma do componente Up das estações NAUS e KRTV')
+    plt.xlabel('Defasagens')
+    plt.ylabel('Correlação')
+    plt.xticks([-30, -20, -10, 0, 10, 20, 30])  # Define os ticks no eixo x
+    plt.yticks([-0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6])  # Define os ticks no eixo y
+    
+    # Exibe o gráfico
+    plt.show()
+
+# Chama a função para plotar o gráfico com as correlações calculadas
+plot_correlacoes(correlacoes)
